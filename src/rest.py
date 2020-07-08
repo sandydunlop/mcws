@@ -9,6 +9,7 @@ import os
 
 
 CONF_FILE="/etc/mcws.conf"
+IS_MCPROHOSTING=True
 
 env_conf_file = os.environ.get('CONF_FILE')
 if env_conf_file != None:
@@ -80,7 +81,11 @@ def requires_auth(f):
 
 
 def server_command(cmd):
+    global IS_MCPROHOSTING
     (rcon_path,service_port,mc_host,mc_port,token,test_token,rconpass,daemon_log_script) = read_conf()
+    if len(cmd)>1:
+        if IS_MCPROHOSTING and cmd[0]=='/':
+            cmd = cmd[1:]
     bytes_string = subprocess.check_output([rcon_path,'-H', mc_host, '-P', mc_port ,'-p', rconpass, cmd])
     output = str(bytes_string, 'utf-8', 'ignore')
     return output[:-5]
