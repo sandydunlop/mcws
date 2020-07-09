@@ -9,7 +9,7 @@ import os
 
 
 CONF_FILE="/etc/mcws.conf"
-IS_MCPROHOSTING=True
+IS_BUKKIT=True
 
 env_conf_file = os.environ.get('CONF_FILE')
 if env_conf_file != None:
@@ -81,10 +81,10 @@ def requires_auth(f):
 
 
 def server_command(cmd):
-    global IS_MCPROHOSTING
+    global IS_BUKKIT
     (rcon_path,service_port,mc_host,mc_port,token,test_token,rconpass,daemon_log_script) = read_conf()
     if len(cmd)>1:
-        if IS_MCPROHOSTING and cmd[0]=='/':
+        if IS_BUKKIT and cmd[0]=='/':
             cmd = cmd[1:]
     bytes_string = subprocess.check_output([rcon_path,'-H', mc_host, '-P', mc_port ,'-p', rconpass, cmd])
     output = str(bytes_string, 'utf-8', 'ignore')
@@ -108,18 +108,19 @@ def set_time(x):
         r = '{"response":"%s"}' % output
     return Response(r, mimetype='text/json')
 
-
+ 
 @app.route('/online', methods=['GET'])
 def online_players():
     (rcon_path,service_port,mc_host,mc_port,token,test_token,rconpass,daemon_log_script) = read_conf()
     array_as_string = ''
-    bytes_string = subprocess.check_output([rcon_path,'-H', mc_host, '-P', mc_port ,'-p', rconpass, '/list'])
+    #bytes_string = subprocess.check_output([rcon_path,'-H', mc_host, '-P', mc_port ,'-p', rconpass, 'list'])
 
-    output = str(bytes_string, 'utf-8', 'ignore')
+    #output = str(bytes_string, 'utf-8', 'ignore')
 
+    output = server_command('list')
     list_start_pos = output.find('online:')
     if list_start_pos > -1 and len(output) > 14:
-        csv = output[list_start_pos+8:-5]
+        csv = output[list_start_pos+8:]
         items = csv.split(',')
         array_as_string = ','.join(['"' + x.strip() + '"' for x in items])
         print (array_as_string)
@@ -189,6 +190,12 @@ def daemon_grep():
 def test_method():
     r = '{"response":"success""}'
     return Response(r, mimetype='text/json')
+
+
+@app.route('/error', methods=['GET'])
+def error_method():
+    r = '{"response":"success""}'
+    return 0/1
 
 
 @app.route('/auth-test', methods=['GET'])
