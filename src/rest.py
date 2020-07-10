@@ -113,18 +113,13 @@ def set_time(x):
 def online_players():
     (rcon_path,service_port,mc_host,mc_port,token,test_token,rconpass,daemon_log_script) = read_conf()
     array_as_string = ''
-    #bytes_string = subprocess.check_output([rcon_path,'-H', mc_host, '-P', mc_port ,'-p', rconpass, 'list'])
-
-    #output = str(bytes_string, 'utf-8', 'ignore')
-
     output = server_command('list')
     list_start_pos = output.find('online:')
     if list_start_pos > -1 and len(output) > 14:
         csv = output[list_start_pos+8:]
         items = csv.split(',')
-        array_as_string = ','.join(['"' + x.strip() + '"' for x in items])
-        print (array_as_string)
-
+        if len(items) > 0 and len(items[0]) > 0:
+            array_as_string = ','.join(['"' + x.strip() + '"' for x in items])
     r = '{"online-players":[%s]}' % array_as_string
     return Response(r, mimetype='text/json')
 
